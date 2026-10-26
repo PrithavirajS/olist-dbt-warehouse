@@ -7,7 +7,7 @@ cleaned AS (
         order_id,
         customer_id,
         -- lowercase + trim so 'Delivered' and 'delivered ' can't split a group
-        lower(trim(order_status)) AS order_status,
+        LOWER(TRIM(order_status)) AS order_status,
         -- timestamps are already TIMESTAMP in Bronze; only renaming here
         order_purchase_timestamp AS ordered_at,
         order_approved_at AS approved_at,
