@@ -4,7 +4,4 @@ dbt_packages/
 logs/
 .env
 dbt-service-account.json
-target/
-dbt_packages/
-logs/
-.env
+dbt_internal_packages/
