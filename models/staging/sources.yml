@@ -1,0 +1,60 @@
+version: 2
+
+sources:
+  - name: olist
+    description: "Raw Olist e-commerce data, loaded as-is into BigQuery (Bronze)."
+    database: olist-dbt-warehouse
+    schema: bronze_olist
+    tables:
+      - name: raw_orders
+        columns:
+          - name: order_id
+            data_tests: [unique, not_null]
+          - name: customer_id
+            data_tests: [not_null]
+
+      - name: raw_customers
+        columns:
+          - name: customer_id
+            data_tests: [unique, not_null]
+
+      - name: raw_order_items
+        columns:
+          - name: order_id
+            data_tests: [not_null]
+          - name: product_id
+            data_tests: [not_null]
+          - name: seller_id
+            data_tests: [not_null]
+
+      - name: raw_payments
+        columns:
+          - name: order_id
+            data_tests: [not_null]
+
+      - name: raw_reviews
+        columns:
+          - name: review_id
+            data_tests: [unique, not_null]
+          - name: order_id
+            data_tests: [not_null]
+
+      - name: raw_products
+        columns:
+          - name: product_id
+            data_tests: [unique, not_null]
+
+      - name: raw_sellers
+        columns:
+          - name: seller_id
+            data_tests: [unique, not_null]
+
+      - name: raw_geolocation
+        columns:
+          - name: geolocation_zip_code_prefix
+            data_tests: [not_null]
+
+      - name: raw_category_translation
+        columns:
+          - name: product_category_name
+            data_tests: [unique, not_null]
