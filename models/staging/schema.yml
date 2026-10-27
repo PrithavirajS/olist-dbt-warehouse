@@ -1,0 +1,148 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "One clean row per order, with lifecycle timestamps and delivery flags."
+    columns:
+      - name: order_id
+        description: "Unique order identifier."
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: "Per-order customer record. Joins to stg_customers."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: order_status
+        description: "Lowercase order status."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['delivered', 'shipped', 'canceled', 'unavailable', 'invoiced', 'processing', 'created', 'approved']
+      - name: is_delivered
+        description: "True when order_status is delivered."
+        data_tests: [not_null]
+
+  - name: stg_customers
+    description: "One row per customer record (one per order). Use customer_unique_id for the real person."
+    columns:
+      - name: customer_id
+        description: "Per-order customer record."
+        data_tests: [unique, not_null]
+      - name: customer_unique_id
+        description: "The real person. Repeats across orders."
+        data_tests: [not_null]
+      - name: state
+        description: "Two-letter Brazilian state code."
+        data_tests: [not_null]
+
+  - name: stg_order_items
+    description: "One row per item within an order."
+    columns:
+      - name: order_item_key
+        description: "order_id plus item_sequence, unique per row."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Joins to stg_orders."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: product_id
+        description: "Joins to stg_products."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: seller_id
+        description: "Joins to stg_sellers."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sellers')
+                field: seller_id
+      - name: price
+        description: "Item price in BRL."
+        data_tests: [not_null]
+
+  - name: stg_payments
+    description: "One row per payment. An order can have several."
+    columns:
+      - name: payment_key
+        description: "order_id plus payment_sequence, unique per row."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Joins to stg_orders."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: payment_type
+        description: "Lowercase payment method."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['credit_card', 'boleto', 'voucher', 'debit_card', 'not_defined']
+
+  - name: stg_reviews
+    description: "One row per review-order pair, with cleaned Portuguese comments."
+    columns:
+      - name: review_key
+        description: "review_id plus order_id, unique per row."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Joins to stg_orders."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: review_score
+        description: "Rating from 1 (worst) to 5 (best)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+
+  - name: stg_products
+    description: "One row per product, with English category names."
+    columns:
+      - name: product_id
+        description: "Unique product identifier."
+        data_tests: [unique, not_null]
+      - name: category_name_en
+        description: "English category, or 'unknown' when missing."
+        data_tests: [not_null]
+
+  - name: stg_sellers
+    description: "One row per seller."
+    columns:
+      - name: seller_id
+        description: "Unique seller identifier."
+        data_tests: [unique, not_null]
+
+  - name: stg_geolocation
+    description: "One row per zip code prefix, with averaged coordinates."
+    columns:
+      - name: zip_code_prefix
+        description: "Zip prefix. Unique because the raw duplicates were collapsed."
+        data_tests: [unique, not_null]
+
+  - name: stg_category_translation
+    description: "Portuguese-to-English product category lookup."
+    columns:
+      - name: category_name_pt
+        description: "Portuguese category name."
+        data_tests: [unique, not_null]
